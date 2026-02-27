@@ -9,6 +9,16 @@
 3. 将降雨量传感器和土壤湿度传感器使用同一个ADC进行DMA多通道采样
 
 4. 添加了开机loading动画和各数据历史曲线图
+   
+5. 优化按键机制从轮询模式为中断，从Gpio_input到Gpio_exti,采用二值信号量的方法，当按键按下时释放信号量叫醒InputTask
+
+6.新增低功耗功能，编写Core/App/StopModeRtc.c文件,采用stopmode设置系统睡眠多少秒。
+
+7.实现U1动态电源管理：开机后oled显示5s后熄灭系统进入stopmode周期性睡眠，当检测到按键按下时才会重新亮起。
+
+8.添加Core/Bsp/debug_log/debug_log.c串口打印文件，即检验oled在熄灭时各传感器是否仍然正常工作。
+
+9.添加蓝牙软件锁和硬件锁，防止蓝牙刚拿到队列消息还没来得及发送，系统就进入睡眠。软件锁为定义全局变量。ble_pending_msgs，当队列拿到消息时ble_pending_msgs++，硬件锁为监控标志位：huart1.gState != HAL_UART_STATE_READY || huart2.gState != HAL_UART_STATE_READY和while (__HAL_UART_GET_FLAG(&huart2, UART_FLAG_TC) == RESET) {}。
 
 具体接线如下：
 
@@ -29,3 +39,5 @@ AHT20、BMP280和OLED:PB10/I2C2_SCL,PB11/I2C2_SDA
 按键: PE4(KEY1) / PE3(KEY3)
 
 蜂鸣器:PA6
+
+串口：PA9,PA10
